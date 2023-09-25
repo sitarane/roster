@@ -1,0 +1,52 @@
+volumes:
+  db-data:
+  gems:
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    env_file: .env
+
+  web:
+    build: .
+    volumes:
+      - .:/app:z
+      - gems:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    depends_on:
+      # - maildev # for email in dev, optional
+      - db
+    env_file: .env
+
+    # lets you use the debugger
+    # stdin_open: true
+    # tty: true
+
+  # Shows you emails sent by Rails at localhost:1080
+  # maildev:
+  #  image: maildev/maildev:2.1.0
+  #  ports:
+  #    - "1080:1080"
+
+  test:
+    build: .
+    volumes:
+      - .:/app
+      - gems:/usr/local/bundle
+    depends_on:
+      - db
+      # - chrome-server # For system tests, optional
+    environment:
+      RAILS_ENV: test
+    env_file: .env
+
+    # lets you use the debugger
+    # stdin_open: true
+    # tty: true
+
+  # For system tests, optional
+  # chrome-server:
+  #   image: selenium/standalone-chrome:114.0
